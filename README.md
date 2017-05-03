@@ -20,13 +20,16 @@ Clone the repository and initialize submodules:
 
 ### Populus
 
-First Install Python 3.5. Then in the repo folder:
+First install Python 3.5+:
 
-    cd contracts
+    brew install python3
+
+Then in the repo folder we install Python dependencies in `venv`:
+
+    cd storj-contracts
     python3.5 -m venv venv
     source venv/bin/activate
     pip install -r requirements.txt
-    pip install -e ico
     
 Then test solc:
 
