@@ -1,16 +1,24 @@
+## Requirements
 
+* OSX or Linux 
+
+* Python 3.5+ (Preferably from Homebrew)
+
+* solc
 
 ## Installation
 
-OSX or Linux required.
+### solc
 
 [Install solc 0.4.8](http://solidity.readthedocs.io/en/develop/installing-solidity.html#binary-packages). This exact version is required. Read full paragraph how to install it on OSX.
 
-Install Populus in Python virtual environment.
+### Repo
 
 Clone the repository and initialize submodules:
 
     git clone --recursive git@github.com:Storj/storj-contracts.git
+
+### Populus
 
 First Install Python 3.5. Then in the repo folder:
 
