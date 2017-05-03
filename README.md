@@ -10,7 +10,7 @@ Install Populus in Python virtual environment.
 
 Clone the repository and initialize submodules:
 
-    git clone --recursive git@github.com:MysteriumNetwork/contracts.git
+    git clone --recursive git@github.com:Storj/storj-contracts.git
 
 First Install Python 3.5. Then in the repo folder:
 

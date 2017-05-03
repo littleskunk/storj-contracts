@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Install solc 
+# Install solc for Travis
 #
 
 set -e
