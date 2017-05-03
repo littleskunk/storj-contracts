@@ -2,7 +2,7 @@ pragma solidity ^0.4.8;
 
 
 import 'zeppelin/contracts/ownership/Ownable.sol';
-import 'zeppelin/contracts/token/ERC20.sol';
+import './FractionalERC20.sol';
 import 'zeppelin/contracts/SafeMath.sol'; // TODO: Convert to SafeMathLib
 
 
@@ -13,7 +13,7 @@ import 'zeppelin/contracts/SafeMath.sol'; // TODO: Convert to SafeMathLib
  * Based on code by FirstBlood:
  * https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
  */
-contract BurnableToken is ERC20, SafeMath, Ownable {
+contract BurnableToken is FractionalERC20, SafeMath, Ownable {
 
   mapping(address => uint) balances;
   mapping (address => mapping (address => uint)) allowed;
