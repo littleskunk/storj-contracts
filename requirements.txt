@@ -34,5 +34,7 @@ watchdog==0.8.3
 web3==3.7.2
 Werkzeug==0.12.1
 Sphinx==1.5.3
-populus==1.6.6
+
+# Helper tools for issuance and testing
+-e git+https://github.com/TokenMarketNet/ico.git@c8aa489a196c74784af370e4fe772d200b9bad10#egg=ico
 

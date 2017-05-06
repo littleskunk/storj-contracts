@@ -34,7 +34,14 @@ contract UpgradeableToken is StandardToken {
    */
   enum UpgradeState {Unknown, NotAllowed, WaitingForAgent, ReadyToUpgrade, Upgrading}
 
+  /**
+   * Somebody has upgraded some of his tokens.
+   */
   event Upgrade(address indexed _from, address indexed _to, uint256 _value);
+
+  /**
+   * New upgrade agent available.
+   */
   event UpgradeAgentSet(address agent);
 
   /**
@@ -89,7 +96,6 @@ contract UpgradeableToken is StandardToken {
 
       // Bad interface
       if(!upgradeAgent.isUpgradeAgent()) throw;
-
       // Make sure that token supplies match in source and target
       if (upgradeAgent.originalSupply() != totalSupply) throw;
 
@@ -111,7 +117,7 @@ contract UpgradeableToken is StandardToken {
    *
    * This allows us to set a new owner for the upgrade mechanism.
    */
-  function setUpgradeMaster(address master) external {
+  function setUpgradeMaster(address master) public {
       if (master == 0x0) throw;
       if (msg.sender != upgradeMaster) throw;
       upgradeMaster = master;
