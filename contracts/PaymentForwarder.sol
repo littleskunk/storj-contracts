@@ -21,11 +21,14 @@ contract PaymentForwarder is Haltable {
   /** How many distinct customers we have that have made a payment */
   uint public customerCount;
 
-  /** Total incoming money per customer id */
-  mapping(uint128 => uint) public payments;
+  /** Total incoming money per centrally tracked customer id */
+  mapping(uint128 => uint) public paymentsByCustomer;
 
-  /** A customer has made a payment. */
-  event PaymentForwarded(address source, uint amount, uint128 customerId);
+  /** Total incoming money per benefactor address */
+  mapping(address => uint) public paymentsByBenefactor;
+
+  /** A customer has made a payment. Benefactor is the address where the tokens will be ultimately issued.*/
+  event PaymentForwarded(address source, uint amount, uint128 customerId, address benefactor);
 
   function PaymentForwarder(address _owner, address _teamMultisig) {
     teamMultisig = _teamMultisig;
@@ -38,20 +41,25 @@ contract PaymentForwarder is Haltable {
    * @param customerId Identifier in the central database
    *
    */
-  function pay(uint128 customerId) public stopInEmergency payable {
+  function pay(uint128 customerId, address benefactor) public stopInEmergency payable {
 
     uint weiAmount = msg.value;
 
-    PaymentForwarded(msg.sender, weiAmount, customerId);
+    PaymentForwarded(msg.sender, weiAmount, customerId, benefactor);
 
     // We trust Ethereum amounts cannot overflow uint256
     totalTransferred += weiAmount;
 
-    if(payments[customerId] == 0) {
+    if(paymentsByCustomer[customerId] == 0) {
       customerCount++;
     }
 
-    payments[customerId] += weiAmount;
+    paymentsByCustomer[customerId] += weiAmount;
+
+    // We track benefactor addresses for extra safety;
+    // In the case of central ETH issuance tracking has problems we can
+    // construct ETH contributions solely based on blockchain data
+    paymentsByBenefactor[benefactor] += weiAmount;
 
     // May run out of gas
     if(!teamMultisig.send(weiAmount)) throw;
