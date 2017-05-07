@@ -1,0 +1,60 @@
+pragma solidity ^0.4.8;
+
+import "./Haltable.sol";
+
+/**
+ * Forward Ethereum payments to another wallet and track them with an event.
+ *
+ * Allows to identify customers who made Ethereum payment for a central token issuance.
+ * Furthermore allow making a payment on behalf of another address.
+ *
+ * Allow pausing to signal the end of the crowdsale.
+ */
+contract PaymentForwarder is Haltable {
+
+  /** Who will get all ETH in the end */
+  address public teamMultisig;
+
+  /** Total incoming money */
+  uint public totalTransferred;
+
+  /** How many distinct customers we have that have made a payment */
+  uint public customerCount;
+
+  /** Total incoming money per customer id */
+  mapping(uint128 => uint) public payments;
+
+  /** A customer has made a payment. */
+  event PaymentForwarded(address source, uint amount, uint128 customerId);
+
+  function PaymentForwarder(address _owner, address _teamMultisig) {
+    teamMultisig = _teamMultisig;
+    owner = _owner;
+  }
+
+  /**
+   * Pay on a behalf of an address.
+   *
+   * @param customerId Identifier in the central database
+   *
+   */
+  function pay(uint128 customerId) public stopInEmergency payable {
+
+    uint weiAmount = msg.value;
+
+    PaymentForwarded(msg.sender, weiAmount, customerId);
+
+    // We trust Ethereum amounts cannot overflow uint256
+    totalTransferred += weiAmount;
+
+    if(payments[customerId] == 0) {
+      customerCount++;
+    }
+
+    payments[customerId] += weiAmount;
+
+    // May run out of gas
+    if(!teamMultisig.send(weiAmount)) throw;
+  }
+
+}
