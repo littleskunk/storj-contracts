@@ -2,7 +2,7 @@
 
 * OSX or Linux 
 
-* Python 3.5+ (Preferably from Homebrew)
+* Python 3.5+ (Preferably from Homebrew if OSX)
 
 * solc
 
@@ -16,7 +16,7 @@ OpenZeppelin is pinned down to commit ffce7e3b08afad8d08a5fdbfbbca098f4d6cdf4e a
 
 ### Issuance
 
-500,000,000 tokens will be created on Storj master wallet. This is the total supply of current Counterparty tokens.
+500,000,000 tokens will be created on Storj Ethereum smaster wallet. This is the total supply of current Counterparty tokens.
 
 These tokens are then allocated (using `approve`) for 
  
