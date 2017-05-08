@@ -1,26 +1,27 @@
 pragma solidity ^0.4.8;
 
 import 'zeppelin/contracts/token/StandardToken.sol';
-import 'zeppelin/contracts/SafeMath.sol'; // TODO: Convert to SafeMathLib
 
 
 contract BurnableToken is StandardToken {
 
+  address public constant BURN_ADDRESS = 0;
+
   /** How many tokens we burned */
-  event Burned(address burner, uint difference);
+  event Burned(address burner, uint burnedAmount);
 
   /**
    * Burn extra tokens from a balance.
    *
    */
-  function burn(uint tokensLeftToOwner) {
+  function burn(uint burnAmount) {
     address burner = msg.sender;
-    uint difference = safeSub(balances[burner], tokensLeftToOwner);
-    balances[burner] = tokensLeftToOwner;
-    totalSupply = safeSub(totalSupply, difference);
-    Burned(burner, difference);
+    balances[burner] = safeSub(balances[burner], burnAmount);
+    totalSupply = safeSub(totalSupply, burnAmount);
+    Burned(burner, burnAmount);
 
-    // Keep exchanges happy
-    Transfer(burner, 0x0000000000, difference);
+    // Keep exchanges happy by sending the burned amount to
+    // "burn address"
+    Transfer(burner, BURN_ADDRESS, burnAmount);
   }
 }

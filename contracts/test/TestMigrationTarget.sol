@@ -1,6 +1,5 @@
 pragma solidity ^0.4.8;
 
-import "../SafeMathLib.sol";
 import "../UpgradeableToken.sol";
 
 /**
@@ -9,8 +8,6 @@ import "../UpgradeableToken.sol";
  * This is not an actual token, but just a stub used in testing.
  */
 contract TestMigrationTarget is StandardToken, UpgradeAgent {
-
-  using SafeMathLib for uint;
 
   UpgradeableToken public oldToken;
 
@@ -36,8 +33,8 @@ contract TestMigrationTarget is StandardToken, UpgradeAgent {
     if (msg.sender != address(oldToken)) throw; // only upgrade from oldToken
 
     // Mint new tokens to the migrator
-    totalSupply = totalSupply.plus(_value);
-    balances[_from] = balances[_from].plus(_value);
+    totalSupply = safeAdd(totalSupply, _value);
+    balances[_from] = safeAdd(balances[_from], _value);
     Transfer(0, _from, _value);
   }
 

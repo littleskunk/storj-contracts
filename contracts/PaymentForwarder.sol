@@ -38,7 +38,7 @@ contract PaymentForwarder is Haltable {
   /**
    * Pay on a behalf of an address.
    *
-   * @param customerId Identifier in the central database
+   * @param customerId Identifier in the central database, UUID v4
    *
    */
   function pay(uint128 customerId, address benefactor) public stopInEmergency payable {

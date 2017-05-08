@@ -6,6 +6,9 @@ import "zeppelin/contracts/ownership/Ownable.sol";
 /**
  * Issuer manages token distribution after the crowdsale.
  *
+ * This contract is fed a CSV file with Ethereum addresses and their
+ * issued token balances.
+ *
  * Issuer act as a gate keeper to ensure there is no double issuance
  * per address, in the case we need to do several issuance batches,
  * there is a race condition or there is a fat finger error.

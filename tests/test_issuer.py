@@ -1,10 +1,7 @@
 """Payment forwarder."""
 import pytest
 
-import uuid
-from eth_utils import to_wei
 from ethereum.tester import TransactionFailed
-
 
 
 @pytest.fixture

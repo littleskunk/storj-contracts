@@ -3,7 +3,6 @@ pragma solidity ^0.4.8;
 import "zeppelin/contracts/token/ERC20.sol";
 import "zeppelin/contracts/token/StandardToken.sol";
 import "./UpgradeAgent.sol";
-import "./SafeMathLib.sol";
 
 /**
  * A token upgrade mechanism where users can opt-in amount of tokens to the next smart contract revision.
@@ -11,8 +10,6 @@ import "./SafeMathLib.sol";
  * First envisioned by Golem and Lunyr projects.
  */
 contract UpgradeableToken is StandardToken {
-
-  using SafeMathLib for uint;
 
   /** Contract / person who can set the upgrade path. This can be the same as team multisig wallet, as what it is with its default value. */
   address public upgradeMaster;
@@ -65,11 +62,11 @@ contract UpgradeableToken is StandardToken {
       // Validate input value.
       if (value == 0) throw;
 
-      balances[msg.sender] = balances[msg.sender].minus(value);
+      balances[msg.sender] = safeSub(balances[msg.sender], value);
 
       // Take tokens out from circulation
-      totalSupply = totalSupply.minus(value);
-      totalUpgraded = totalUpgraded.plus(value);
+      totalSupply = safeSub(totalSupply, value);
+      totalUpgraded = safeAdd(totalUpgraded, value);
 
       // Upgrade agent reissues the tokens
       upgradeAgent.upgradeFrom(msg.sender, value);
