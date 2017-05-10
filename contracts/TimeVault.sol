@@ -1,3 +1,8 @@
+pragma solidity ^0.4.8;
+
+import "zeppelin/contracts/SafeMath.sol";
+import "./BurnableToken.sol";
+
 /// @title Time-locked vault of tokens allocated to STORJ owners after variable amount of days
 /// based on Lunyr Token
 
