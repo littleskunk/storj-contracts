@@ -27,6 +27,6 @@ contract CentrallyIssuedToken is BurnableToken, UpgradeableToken {
     decimals = _decimals;
 
     // Allocate initial balance to the owner
-    balances[msg.sender] = _totalSupply;
+    balances[_owner] = _totalSupply;
   }
 }
