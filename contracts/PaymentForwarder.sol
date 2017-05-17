@@ -1,6 +1,8 @@
 pragma solidity ^0.4.8;
 
 import "./Haltable.sol";
+import 'zeppelin/contracts/SafeMath.sol';
+
 
 /**
  * Forward Ethereum payments to another wallet and track them with an event.
@@ -10,7 +12,7 @@ import "./Haltable.sol";
  *
  * Allow pausing to signal the end of the crowdsale.
  */
-contract PaymentForwarder is Haltable {
+contract PaymentForwarder is Haltable, SafeMath {
 
   /** Who will get all ETH in the end */
   address public teamMultisig;
@@ -30,6 +32,11 @@ contract PaymentForwarder is Haltable {
   /** A customer has made a payment. Benefactor is the address where the tokens will be ultimately issued.*/
   event PaymentForwarded(address source, uint amount, uint128 customerId, address benefactor);
 
+  /**
+   * @param _teamMultisig Team multisig receives the deposited payments.
+   *
+   * @param _owner Owner is able to pause and resume crowdsale
+   */
   function PaymentForwarder(address _owner, address _teamMultisig) {
     teamMultisig = _teamMultisig;
     owner = _owner;
@@ -38,28 +45,37 @@ contract PaymentForwarder is Haltable {
   /**
    * Pay on a behalf of an address.
    *
-   * @param customerId Identifier in the central database, UUID v4
+   * We log the payment event, so that the server can keep tally of the invested amounts
+   * and token receivers.
+   *
+   * The actual payment is forwarded to the team multisig.
+   *
+   * @param customerId Identifier in the central database, UUID v4 - this is used to note customer by email
    *
    */
   function pay(uint128 customerId, address benefactor) public stopInEmergency payable {
 
     uint weiAmount = msg.value;
 
+    if(weiAmount == 0) {
+      throw; // No invalid payments
+    }
+
     PaymentForwarded(msg.sender, weiAmount, customerId, benefactor);
 
     // We trust Ethereum amounts cannot overflow uint256
-    totalTransferred += weiAmount;
+    totalTransferred = safeAdd(totalTransferred, weiAmount);
 
     if(paymentsByCustomer[customerId] == 0) {
       customerCount++;
     }
 
-    paymentsByCustomer[customerId] += weiAmount;
+    paymentsByCustomer[customerId] = safeAdd(paymentsByCustomer[customerId], weiAmount);
 
     // We track benefactor addresses for extra safety;
     // In the case of central ETH issuance tracking has problems we can
     // construct ETH contributions solely based on blockchain data
-    paymentsByBenefactor[benefactor] += weiAmount;
+    paymentsByBenefactor[benefactor] = safeAdd(paymentsByBenefactor[benefactor], weiAmount);
 
     // May run out of gas
     if(!teamMultisig.send(weiAmount)) throw;
