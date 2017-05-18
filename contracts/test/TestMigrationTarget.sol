@@ -11,8 +11,6 @@ contract TestMigrationTarget is StandardToken, UpgradeAgent {
 
   UpgradeableToken public oldToken;
 
-  uint public originalSupply;
-
   function TestMigrationTarget(UpgradeableToken _oldToken) {
 
     oldToken = _oldToken;
