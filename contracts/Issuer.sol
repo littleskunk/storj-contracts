@@ -40,7 +40,7 @@ contract Issuer is Ownable {
     if(issued[benefactor]) throw;
     token.transferFrom(allower, benefactor, amount);
     issued[benefactor] = true;
-    issuedCount += amount;
+    issuedCount = safeAdd(issuedCount, amount);
   }
 
 }
