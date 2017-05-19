@@ -38,3 +38,5 @@ Sphinx==1.5.3
 # Helper tools for issuance and testing
 -e git+https://github.com/TokenMarketNet/ico.git@c8aa489a196c74784af370e4fe772d200b9bad10#egg=ico
 
+# Verify on EtherScan
+splinter-0.7.5

@@ -1,0 +1,52 @@
+
+    # The Ethereum chain name where we deploy there contracts.
+    # Either "mainnet", "ropsten" or "kovan.
+    # Affects Etherscan verification process only.
+chain: mainnet
+
+    # Do we perform deployed contract source code verification on etherscan.io service.
+    # This is a process using an automated web browser and automated form fill in.
+verify_on_etherscan: yes 
+
+    # Firefox 53b has an issue that prevents correct Selenium automated
+    # interaction with Etherscan form.
+    # http://stackoverflow.com/q/43175013/315168
+browser_driver: chrome
+
+    #
+    # Contracts section defines different smart contracts that
+    # are required to run the ICO.
+    #
+contracts:
+
+        # Team multisignature wallet.
+        #
+        # This contract deploys the team multisignature wallet.
+        # One we use here is based one by Gavin Wood.
+        #
+        # Multiple escrow key holders are required to take action to move
+        # funds around.
+        #
+        # All crowdsale collected funds are deposited to the this multisig wallet in real time.
+        #
+  team_multisig:
+    contract_name: MultiSigWallet
+    contract_file: GnosisWallet.sol
+    address: '0xA33516e6f64c6c2869dFf6744953A472cd60c8F6'
+
+        #
+        # Payment forwarder.
+        #
+        # We log payments with customer ids to ensure we can notify people by their email.
+        #
+  payment_forwarder: !!omap
+  - contract_name: PaymentForwarder
+  - contract_file: PaymentForwarder.sol
+  - arguments: !!omap
+    - _owner: '0xA33516e6f64c6c2869dFf6744953A472cd60c8F6'
+    - _teamMultisig: '0xA33516e6f64c6c2869dFf6744953A472cd60c8F6'
+  - address: '0xe75509810e09b04eef4ebd0b471bacf5530b162e'
+  - constructor_args: '0x000000000000000000000000a33516e6f64c6c2869dff6744953a472cd60c8f6000000000000000000000000a33516e6f64c6c2869dff6744953a472cd60c8f6'
+  - libraries: {}
+  - etherscan_link: https://etherscan.io/address/0xe75509810e09b04eef4ebd0b471bacf5530b162e
+deploy_address: '0x063ea21a360b687fda00ffe3da000d0ba4110318'
