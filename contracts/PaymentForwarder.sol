@@ -61,9 +61,16 @@ contract PaymentForwarder is Haltable, SafeMath {
       throw; // No invalid payments
     }
 
+    if(customerId == 0) {
+      throw; // We require to record customer id for the server side processing
+    }
+
+    if(benefactor == 0) {
+      throw; // Bad payment address
+    }
+
     PaymentForwarded(msg.sender, weiAmount, customerId, benefactor);
 
-    // We trust Ethereum amounts cannot overflow uint256
     totalTransferred = safeAdd(totalTransferred, weiAmount);
 
     if(paymentsByCustomer[customerId] == 0) {

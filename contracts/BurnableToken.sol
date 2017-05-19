@@ -3,6 +3,14 @@ pragma solidity ^0.4.8;
 import './StandardToken.sol';
 
 
+/**
+ * A trait that allows any token owner to decrease the token supply.
+ *
+ * We add a Burned event to differentiate from normal transfers.
+ * However, we still try to support some legacy Ethereum ecocsystem,
+ * as ERC-20 has not standardized on the burn event yet.
+ *
+ */
 contract BurnableToken is StandardToken {
 
   address public constant BURN_ADDRESS = 0;
@@ -20,8 +28,9 @@ contract BurnableToken is StandardToken {
     totalSupply = safeSub(totalSupply, burnAmount);
     Burned(burner, burnAmount);
 
-    // Keep exchanges happy by sending the burned amount to
-    // "burn address"
+    // Keep token balance tracking services happy by sending the burned amount to
+    // "burn address", so that it will show up as a ERC-20 transaction
+    // in etherscan, etc. as there is no standarized burn event yet
     Transfer(burner, BURN_ADDRESS, burnAmount);
   }
 }

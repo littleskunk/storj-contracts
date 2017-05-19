@@ -2,6 +2,7 @@ pragma solidity ^0.4.8;
 
 import './StandardToken.sol';
 import "zeppelin/contracts/ownership/Ownable.sol";
+import 'zeppelin/contracts/SafeMath.sol';
 
 /**
  * Issuer manages token distribution after the crowdsale.
@@ -16,7 +17,7 @@ import "zeppelin/contracts/ownership/Ownable.sol";
  * Issuer contract gets allowance from the team multisig to distribute tokens.
  *
  */
-contract Issuer is Ownable {
+contract Issuer is Ownable, SafeMath {
 
   /** Map addresses whose tokens we have already issued. */
   mapping(address => bool) public issued;
@@ -40,7 +41,7 @@ contract Issuer is Ownable {
     if(issued[benefactor]) throw;
     token.transferFrom(allower, benefactor, amount);
     issued[benefactor] = true;
-    issuedCount += amount;
+    issuedCount = safeAdd(amount, issuedCount);
   }
 
 }
