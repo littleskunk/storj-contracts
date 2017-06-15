@@ -144,15 +144,14 @@ Write down the token contract address.
 Deploy an issuer contract using the following command. 
   
     distribute-tokens --chain=kovan --address=[issuer account] --token=[token contract address] --csv-file=dummy.csv --master-address=[team multisig]        
-   ``
+   
 Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens.
 
     TODO How to do this from the multisig wallet
     
 (Example using ipython console for a normal account. First start with `ipython` and then paste in the text using `%paste` command):
 
-```
-python
+```python
 
     from populus import Project
     from ico.utils import check_succesful_tx
