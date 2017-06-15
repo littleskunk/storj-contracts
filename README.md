@@ -117,19 +117,21 @@ Address entries must be unique - same Ethereum address cannot appear twice.
 
 * Create an issuer Ethereum account on Parity. Move some gas ETH there.
    
-* Deploy an issuer contract [TODO] 
+* Deploy an issuer contract using the following command. The application will try to verify the deployed contract on EtherScan.io using Chrome, so you need to have `chromedriver` browser automation utility installed:
+  
+    distribute-tokens --chain=kovan --address=[issuer account] --address-column=address --amount-column=amount --csv-file=distribution.csv --token=[token contract address]           
    
-* Call `StandardToken.approve(issuer_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens.
+* Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens.
 
 * Unlock issuer account on Parity (unlock from command line so that it stays open - TODO)
 
 * Run script:
 
-    distribute-tokens --chain=kovan --address-column=address ----amount-column=amount --csv-file=distribution.csv --issuer-address=[issuer contract] --no-allow-zero --limit=10000 --token=[token contract address]
+    distribute-tokens --chain=kovan --address=[issuer account] --address-column=address ----amount-column=amount --csv-file=distribution.csv --issuer-address=[issuer contract] --no-allow-zero --limit=10000 --token=[token contract address]
       
 This script will start issuing tokens. In the case the script is interrupted you can start it again.
 
-The number of tokens issued can be checked on Issuer contract address on etherscan.io.
+The number of tokens issued so far can be checked on Issuer contract address on etherscan.io.
 
 
 
