@@ -103,7 +103,34 @@ To run tests activate the virtual environment and then run:
 
     py.test
     
+## Distributing tokens
     
+Token balances are inputted as a CSV file with tuples (Ethereum address, balance).
+    
+Address entries must be unique - same Ethereum address cannot appear twice.
+  
+### Steps to issue tokens to normal accounts
+
+* Make sure you have Mainnet running in localhost:8545 or Kovan testnet running localhost:8547 (see populous.json)
+
+* Deploy the token contract (`CentrallyIssuedToken`) with full urburnt balance and having the team multisig wallet as an owner. Make sure the token contract has decimals value correctly set.
+
+* Create an issuer Ethereum account on Parity. Move some gas ETH there.
+   
+* Deploy an issuer contract [TODO] 
+   
+* Call `StandardToken.approve(issuer_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens.
+
+* Unlock issuer account on Parity (unlock from command line so that it stays open - TODO)
+
+* Run script:
+
+    distribute-tokens --chain=kovan --address-column=address ----amount-column=amount --csv-file=distribution.csv --issuer-address=[issuer contract] --no-allow-zero --limit=10000 --token=[token contract address]
+      
+This script will start issuing tokens. In the case the script is interrupted you can start it again.
+
+The number of tokens issued can be checked on Issuer contract address on etherscan.io.
+
 
 
                                                                            
