@@ -111,23 +111,83 @@ Address entries must be unique - same Ethereum address cannot appear twice.
   
 ### Steps to issue tokens to normal accounts
 
-* Make sure you have Mainnet running in localhost:8545 or Kovan testnet running localhost:8547 (see populous.json)
+Take update of scripts git repo 
 
-* Deploy the token contract (`CentrallyIssuedToken`) with full urburnt balance and having the team multisig wallet as an owner. Make sure the token contract has decimals value correctly set.
+    cd venv/src/ico ; git pull ; cd ../../..
 
-* Create an issuer Ethereum account on Parity. Move some gas ETH there.
+Make sure you have Mainnet running in localhost:8545 or Kovan testnet running localhost:8547 (see `populous.json` for port configuration).
+
+Scripts will try to verify the deployed contract on EtherScan.io using Chrome, so you need to have `chromedriver` browser automation utility installed.
+
+    brew install chromedriver
+
+Make sure you have all contracts compiled to the latest version:
+
+    populus compile
+
+Create an issuer Ethereum account on Parity. Move some gas ETH there. You can do using geth console:
+
+    geth attach http://120.0.0.1:8547
+
+    personal.newAccount()
+
+Unlock issuer account on Parity when starting parity on command line:
+
+    /usr/bin/parity --chain=kovan --unlock 0x72e0bdab1b4daccb9968a0e7bb1175dd629590e2 --unlock 0x001fc7d7e506866aeab82c11da515e9dd6d02c25 --password password.txt --jsonrpc-apis "web3,eth,net,parity,traces,rpc,personal"
+    
+Deploy the token contract (`CentrallyIssuedToken`) with full urburnt balance and having the team multisig wallet as an owner. Make sure the token contract has decimals value correctly set:
    
-* Deploy an issuer contract using the following command. The application will try to verify the deployed contract on EtherScan.io using Chrome, so you need to have `chromedriver` browser automation utility installed:
+    deploy-token --chain=kovan --address=[issuer account] --contract-name=CentrallyIssuedToken --name=Xtoken --symbol=XXX --supply=1000000 --decimals=8 --verify --verify-filename=CentrallyIssuedToken.sol --master-address=[team multisig wallt] 
+   
+Write down the token contract address.
+      
+Deploy an issuer contract using the following command. 
   
-    distribute-tokens --chain=kovan --address=[issuer account] --address-column=address --amount-column=amount --csv-file=distribution.csv --token=[token contract address]           
+    distribute-tokens --chain=kovan --address=[issuer account] --token=[token contract address] --csv-file=dummy.csv --master-address=[team multisig]        
+   ``
+Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens.
+
+    TODO How to do this from the multisig wallet
+    
+(Example using ipython console for a normal account. First start with `ipython` and then paste in the text using `%paste` command):
+
+```
+python
+
+    from populus import Project
+    from ico.utils import check_succesful_tx
+
+    # Unlock fake team multisig using geth console
+    fake_team_multisig_address = "0x72e0bdab1b4daccb9968a0e7bb1175dd629590e2"
+    
+    token_address = "0x399fe67a232dd457c3639b3dccd64d5f7dcad187"
+    issuer_contract_address = "0x66b735baff9e4be524c555b61e3a20f0116a4527"
+    tokens_to_distribute = 500 * 10**8  # Use 8 decimals
+        
+    project = Project()
    
-* Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens.
+    with project.get_chain("kovan") as c:
+        web3 = c.web3
+        CentrallyIssuedToken = c.provider.get_base_contract_factory('CentrallyIssuedToken')
+        contract = CentrallyIssuedToken(address=token_address)
+        
+        print("Fake team multisig ETH balance is", web3.eth.getBalance(fake_team_multisig_address))
+        
+        print("Fake team multisig token balance is", contract.call().balanceOf(fake_team_multisig_address))
+        
+        # We need to call approve() twice due to attack mitigation 
+        txid = contract.transact({"from": fake_team_multisig_address}).approve(issuer_contract_address, 0)
+        check_succesful_tx(web3, txid)
 
-* Unlock issuer account on Parity (unlock from command line so that it stays open - TODO)
+        txid = contract.transact({"from": fake_team_multisig_address}).approve(issuer_contract_address, tokens_to_distribute) 
+        check_succesful_tx(web3, txid)
+        
+        print("Approved", tokens_to_distribute)
+                        
+```
+Run the distribution script:
 
-* Run script:
-
-    distribute-tokens --chain=kovan --address=[issuer account] --address-column=address ----amount-column=amount --csv-file=distribution.csv --issuer-address=[issuer contract] --no-allow-zero --limit=10000 --token=[token contract address]
+    distribute-tokens --chain=kovan --address=[issuer account] --address-column=address --amount-column=amount --csv-file=distribution.csv --issuer-address=[issuer contract] --no-allow-zero --limit=10000 --token=[token contract address]
       
 This script will start issuing tokens. In the case the script is interrupted you can start it again.
 
