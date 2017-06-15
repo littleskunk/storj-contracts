@@ -192,6 +192,8 @@ This script will start issuing tokens. In the case the script is interrupted you
 
 The number of tokens issued so far can be checked on Issuer contract address on etherscan.io.
 
+## Steps to issue out TimeVaults
 
+TODO
 
                                                                            
