@@ -108,6 +108,14 @@ To run tests activate the virtual environment and then run:
 Token balances are inputted as a CSV file with tuples (Ethereum address, balance).
     
 Address entries must be unique - same Ethereum address cannot appear twice.
+
+### CSV example
+
+Example of CSV data:
+    
+    address,amount
+    0x001d2A8b10F4b74852A70517C91Db2e924Fc9fc5,3.3
+    0x006dD316CA3131738396b15f82F11511b3313Bf4,4.4
   
 ### Steps to issue tokens to normal accounts
 
@@ -143,9 +151,9 @@ Write down the token contract address.
       
 Deploy an issuer contract using the following command. 
   
-    distribute-tokens --chain=kovan --address=[issuer account] --token=[token contract address] --csv-file=dummy.csv --master-address=[team multisig]        
+    distribute-tokens --chain=kovan --address=[account that created issuer contract] --token=[token contract address] --csv-file=dummy.csv --master-address=[team multisig]        
    
-Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens.
+Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens. When you do approve the token amount must account for decimal places. E.g. 100 tokens is 100*10**8 total_issuance_amount.
 
     TODO How to do this from the multisig wallet
     
@@ -186,7 +194,7 @@ Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` fro
 ```
 Run the distribution script:
 
-    distribute-tokens --chain=kovan --address=[issuer account] --address-column=address --amount-column=amount --csv-file=distribution.csv --issuer-address=[issuer contract] --no-allow-zero --limit=10000 --token=[token contract address]
+    distribute-tokens --chain=kovan --address=[issuer account] --address-column=[Ethereum address column name in CSV] --amount-column=[Token amount column name in the CSV file] --csv-file=distribution.csv --issuer-address=[issuer contract] --no-allow-zero --limit=10000 --token=[token contract address] --master-address=[account that did approve]
       
 This script will start issuing tokens. In the case the script is interrupted you can start it again.
 
