@@ -26,20 +26,26 @@ contract Issuer is Ownable, SafeMath {
   StandardToken public token;
 
   /** Party (team multisig) who is in the control of the token pool. Note that this will be different from the owner address (scripted) that calls this contract. */
-  address public allower;
+  address public masterTokenBalanceHolder;
 
   /** How many addresses have received their tokens. */
   uint public issuedCount;
 
-  function Issuer(address _owner, address _allower, StandardToken _token) {
-    owner = _owner;
-    allower = _allower;
+  /**
+   *
+   * @param _issuerDeploymentAccount Ethereun account that controls the issuance process and pays the gas fee
+   * @param _token Token contract address
+   * @param _masterTokenBalanceHolder Multisig address that does StandardToken.approve() to give allowance for this contract
+   */
+  function Issuer(address _issuerDeploymentAccount, address _masterTokenBalanceHolder, StandardToken _token) {
+    owner = _issuerDeploymentAccount;
+    masterTokenBalanceHolder = _masterTokenBalanceHolder;
     token = _token;
   }
 
   function issue(address benefactor, uint amount) onlyOwner {
     if(issued[benefactor]) throw;
-    token.transferFrom(allower, benefactor, amount);
+    token.transferFrom(masterTokenBalanceHolder, benefactor, amount);
     issued[benefactor] = true;
     issuedCount = safeAdd(amount, issuedCount);
   }

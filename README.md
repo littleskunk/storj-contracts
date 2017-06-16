@@ -133,7 +133,7 @@ Make sure you have all contracts compiled to the latest version:
 
     populus compile
 
-Create an issuer Ethereum account on Parity. Move some gas ETH there. You can do using geth console:
+Create an issuer Ethereum account on Parity. This is later referred as *issuer account*. Move some gas ETH there. You can do using geth console:
 
     geth attach http://120.0.0.1:8547
 
@@ -143,15 +143,15 @@ Unlock issuer account on Parity when starting parity on command line:
 
     /usr/bin/parity --chain=kovan --unlock 0x72e0bdab1b4daccb9968a0e7bb1175dd629590e2 --unlock 0x001fc7d7e506866aeab82c11da515e9dd6d02c25 --password password.txt --jsonrpc-apis "web3,eth,net,parity,traces,rpc,personal"
     
-Deploy the token contract (`CentrallyIssuedToken`) with full urburnt balance and having the team multisig wallet as an owner. Make sure the token contract has decimals value correctly set:
+Deploy the token contract (`CentrallyIssuedToken`) with full urburnt balance and having the team multisig wallet as the balance owner and upgrade master. The team multisig wallet address is later referred as *master address*. Make sure the token contract has decimals value correctly set.
    
-    deploy-token --chain=kovan --address=[issuer account] --contract-name=CentrallyIssuedToken --name=Xtoken --symbol=XXX --supply=1000000 --decimals=8 --verify --verify-filename=CentrallyIssuedToken.sol --master-address=[team multisig wallt] 
+    deploy-token --chain=kovan --address=[issuer account] --contract-name=CentrallyIssuedToken --name=Xtoken --symbol=XXX --supply=1000000 --decimals=8 --verify --verify-filename=CentrallyIssuedToken.sol --master-address=[team multisig wallet address] 
    
 Write down the token contract address.
       
-Deploy an issuer contract using the following command. 
+Deploy an issuer contract using the following command. this is later referred as *issuer contract*. 
   
-    distribute-tokens --chain=kovan --address=[account that created issuer contract] --token=[token contract address] --csv-file=dummy.csv --master-address=[team multisig]        
+    distribute-tokens --chain=kovan --address=[issuer account] --token=[token contract address] --csv-file=dummy.csv --master-address=[team multisig address]        
    
 Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens. When you do approve the token amount must account for decimal places. E.g. 100 tokens is 100*10**8 total_issuance_amount.
 
@@ -194,7 +194,7 @@ Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` fro
 ```
 Run the distribution script:
 
-    distribute-tokens --chain=kovan --address=[issuer account] --address-column=[Ethereum address column name in CSV] --amount-column=[Token amount column name in the CSV file] --csv-file=distribution.csv --issuer-address=[issuer contract] --no-allow-zero --limit=10000 --token=[token contract address] --master-address=[account that did approve]
+    distribute-tokens --chain=kovan --address=[issuer account] --address-column=[Ethereum address column name in CSV] --amount-column=[Token amount column name in the CSV file] --csv-file=distribution.csv --issuer-address=[issuer contract] --no-allow-zero --limit=10000 --token=[token contract address] --master-address=[team multisig wallet address]
       
 This script will start issuing tokens. In the case the script is interrupted you can start it again.
 
