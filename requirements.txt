@@ -39,4 +39,4 @@ Sphinx==1.5.3
 -e git+https://github.com/TokenMarketNet/ico.git@3bc8733f5507fe7cface35cff76ce526a9a64f0d#egg=ico
 
 # Verify on EtherScan
-splinter-0.7.5
+splinter==0.7.5
