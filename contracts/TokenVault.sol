@@ -9,11 +9,11 @@ import "zeppelin/contracts/ownership/Ownable.sol";
  * Steps
  *
  * - Prepare a spreadsheet for token allocation
- * - Deploy this contract, with the sum to tokens to be distributed
- * - Call setInvestor for all investors from the owner account
+ * - Deploy this contract, with the sum to tokens to be distributed, from the owner account
+ * - Call setInvestor for all investors from the owner account using a local script and CSV input
  * - Call lock from the owner account
  * - Move tokensToBeAllocated in this contract usign StandardToken.transfer()
- * - Wait
+ * - Wait until the freeze period is over
  * - After the freeze time is over investors can call claim() from their address to get their tokens
  *
  */
@@ -54,11 +54,13 @@ contract TokenVault is Ownable {
    */
   enum State{Unknown, Loading, Holding, Distributing}
 
-  /** We allocatd tokens for investor */
+  /** We allocated tokens for investor */
   event Allocated(address investor, uint value);
 
   /** We distributed tokens to an investor */
   event Distributed(address investors, uint count);
+
+  event Locked();
 
   /**
    * Create presale contract where lock up period is given days
@@ -73,6 +75,11 @@ contract TokenVault is Ownable {
 
     owner = _owner;
 
+    // Invalid owenr
+    if(owner == 0) {
+      throw;
+    }
+
     token = _token;
 
     // Check the address looks like a token contract
@@ -86,6 +93,7 @@ contract TokenVault is Ownable {
     }
 
     freezeEndsAt = _freezeEndsAt;
+    tokensToBeAllocated = _tokensToBeAllocated;
   }
 
   /**
@@ -115,14 +123,48 @@ contract TokenVault is Ownable {
     Allocated(investor, amount);
   }
 
+  /**
+   * Lock the vault.
+   *
+   *
+   * - All balances have been loaded in correctly
+   * - Tokens are transferred on this vault correctly
+   *
+   * Checks are in place to prevent creating a vault that is locked with incorrect token balances.
+   *
+   */
   function lock() onlyOwner {
+
+    if(lockedAt > 0) {
+      throw; // Already locked
+    }
 
     // Spreadsheet sum does not match to what we have loaded to the investor data
     if(tokensAllocatedTotal != tokensToBeAllocated) {
       throw;
     }
 
+    // Do not lock the vault if the given tokens on this contract
+    //
+    if(token.balanceOf(address(this)) != tokensAllocatedTotal) {
+      throw;
+    }
+
     lockedAt = now;
+
+    Locked();
+  }
+
+  /**
+   * In the case locking failed, then allow the owner to reclaim the tokens on the contract.
+   */
+  function recoverFailedLock() onlyOwner {
+    if(lockedAt > 0) {
+      throw;
+    }
+
+    // Transfer all tokens on this contract back to the owner
+    token.transfer(owner, token.balanceOf(address(this)));
   }
 
   /**
@@ -139,6 +181,14 @@ contract TokenVault is Ownable {
   function claim() {
 
     address investor = msg.sender;
+
+    if(lockedAt == 0) {
+      throw; // We were never locked
+    }
+
+    if(now < freezeEndsAt) {
+      throw; // Trying to claim early
+    }
 
     if(balances[investor] == 0) {
       // Not our investor
@@ -173,8 +223,4 @@ contract TokenVault is Ownable {
     }
   }
 
-  /** Explicitly call function from your wallet. */
-  function() payable {
-    throw;
-  }
 }
