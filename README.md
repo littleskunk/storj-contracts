@@ -184,7 +184,7 @@ Unlock Parity with a multisig owner account
 Run the script
 
     cd src
-    node approve [issuer contract address] [amount]
+    node approve.js [issuer contract address] [amount]
 
 You should now be able to confirm the approve transaction from the Gnosis wallet UI
 
