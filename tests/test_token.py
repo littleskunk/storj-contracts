@@ -22,7 +22,6 @@ def test_token_initialized(token: Contract, team_multisig: str, token_symbol: st
     assert token.call().totalSupply() == initial_supply
 
 
-
 def test_transfer(token_with_customer_balance: Contract, customer: str, empty_address: str):
     """ERC-20 compatible transfer() is available."""
 

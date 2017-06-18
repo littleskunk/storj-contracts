@@ -232,8 +232,144 @@ This script will start issuing tokens. In the case the script is interrupted you
 
 The number of tokens issued so far can be checked on Issuer contract address on etherscan.io.
 
-## Steps to issue out TimeVaults
+## Distributing vaults
 
-TODO
+This is step-by-step process how to create time vaults and how to put tokens in them. This assumes you have already created token (above).
+
+Multiple vault contracts are needed to deploy, one for each time period. 
+
+For each vault, manually verify the sum of the tokens going in. The deployment script and contracts will check this multiple times. 
+
+TokenVault is controlled from an controller account that will pay the gas fees.
+
+### Deploying a single vault
+
+This will deploy the vault contract and verify it on EtherScan.
+
+First we deploy a TokenVault contract using `token-vault`  tool for 3000 tokens. Decimal place conversion is calculated internally.:
+ 
+    token-vault --chain=kovan --address=[controlled account] --action=deploy --freeze-ends-at=1497746334 --tokens-to-be-allocated=3000 --token-address=[token address]
+        
+Write down the vault contract address. Also manually check it variables in Read contract view on EtherScan.
+
+Now lets load vault data. The CSV amount column sum must match what we gave earlier in --tokens-to-be-allocated.
+    
+    token-vault --chain=kovan --address=[controlled account] --action=load --token-address=[token account] --csv-file="dummy2.csv" --address-column="address" --amount-column="amount" --vault-address=[token vault address]
+    
+Example CSV:
+    
+    address,amount
+    0x001d2A8b10F4b74852A70517C91Db2e924Fc9fc5,100
+    0x006dD316CA3131738396b15f82F11511b3313Bf4,100
+    0x72e0bdab1b4daccb9968a0e7bb1175dd629590e2,2800
+
+Before we can lock the vault we need to move `tokens-to-be-allocated` amount of tokens on the vault contract from the master account. Here is a Python example to move the tokens on the contract. You can also manually inspect using EtherScan that the token balance on the contract matches expected total amount:
+
+```python
+    from populus import Project
+    from ico.utils import check_succesful_tx
+
+    # Unlock fake team multisig using geth console
+    fake_team_multisig_address = "0x001FC7d7E506866aEAB82C11dA515E9DD6D02c25"
+    
+    token_address = "0x2829aa40614901fc677aae4b090759d8fc660faf"
+    vault_address = "0xb9cdb05a6a4341ca72cfdc41f88a38c2755839a9"
+    tokens_to_locked = 3000 * 10**8  # Use 8 decimals
+        
+    project = Project()
+   
+    with project.get_chain("kovan") as c:
+        web3 = c.web3
+    
+        CentrallyIssuedToken = c.provider.get_base_contract_factory('CentrallyIssuedToken')
+        TokenVault = c.provider.get_base_contract_factory('TokenVault')
+        
+        contract = CentrallyIssuedToken(address=token_address)
+        vault = TokenVault(address=vault_address)
+                
+        print("Fake team multisig ETH balance is", web3.eth.getBalance(fake_team_multisig_address))
+        
+        print("Fake team multisig token balance is", contract.call().balanceOf(fake_team_multisig_address))
+        
+        print("Transfering tokens to the vault")
+        txid = contract.transact({"from": fake_team_multisig_address}).transfer(vault_address, tokens_to_locked)
+        check_succesful_tx(web3, txid)
+        
+        print("Tokens expected", vault.call().tokensToBeAllocated())
+        print("Tokens allocated", vault.call().tokensAllocatedTotal())
+        print("Tokens hold", vault.call().getBalance())
+```
+
+We lock the vault when the vault contract is holding the correct amount token, and we have manually inspected on EtherScan that the investor count, investor addresses and freeze ends at date are correct.
+
+    token-vault --chain=kovan --address=[controller account] --action=lock --token-address=[token address] --vault-address=[vault address]
+
+Investors can claim the tokens from the vault calling the claim function.
+
+```python
+    from populus import Project
+    from ico.utils import check_succesful_tx
+
+    vault_address = "0xb9cdb05a6a4341ca72cfdc41f88a38c2755839a9"        
+    claimer_account = "0x72e0bdab1b4daccb9968a0e7bb1175dd629590e2"
+        
+    project = Project()
+   
+    with project.get_chain("kovan") as c:
+        web3 = c.web3
+    
+        CentrallyIssuedToken = c.provider.get_base_contract_factory('CentrallyIssuedToken')
+        TokenVault = c.provider.get_base_contract_factory('TokenVault')
+        
+        vault = TokenVault(address=vault_address)
+        token_address = vault.call().token()
+        token = CentrallyIssuedToken(address=token_address)
+                
+        print("Claiming tokens for the account", claimer_account)
+        before_balance = token.call().balanceOf(claimer_account)
+        txid = vault.transact({"from": claimer_account}).claim()
+        check_succesful_tx(web3, txid)
+        after_balance = token.call().balanceOf(claimer_account)    
+        print("Claimed tokens", after_balance - before_balance)
+```
+
+### Emergency procedures
+
+In the case you load wrong amount of tokens on the vault you can claim them back to the controller account. This **cannot** be done for a locked vault.:
+
+```python
+    from populus import Project
+    from ico.utils import check_succesful_tx
+
+    # Unlock fake team multisig using geth console
+    fake_team_multisig_address = "0x001FC7d7E506866aEAB82C11dA515E9DD6D02c25"
+    
+    token_address = "0x2829aa40614901fc677aae4b090759d8fc660faf"
+    vault_address = "0xb9cdb05a6a4341ca72cfdc41f88a38c2755839a9"
+    tokens_to_locked = 3000 * 10**8  # Use 8 decimals
+        
+    project = Project()
+   
+    with project.get_chain("kovan") as c:
+        web3 = c.web3
+    
+        CentrallyIssuedToken = c.provider.get_base_contract_factory('CentrallyIssuedToken')
+        TokenVault = c.provider.get_base_contract_factory('TokenVault')
+        
+        contract = CentrallyIssuedToken(address=token_address)
+        vault = TokenVault(address=vault_address)
+                               
+        print("Restoring tokens from faulted vault")
+        print("Vault owner", vault.call().owner())
+        before_balance = contract.call().balanceOf(fake_team_multisig_address)
+        txid = vault.transact({"from": fake_team_multisig_address}).recoverFailedLock()
+        check_succesful_tx(web3, txid)
+        after_balance = contract.call().balanceOf(fake_team_multisig_address)
+        
+        print("Tokens recovered", after_balance - before_balance)
+        print("Tokens expected", vault.call().tokensToBeAllocated())
+        print("Tokens allocated", vault.call().tokensAllocatedTotal())
+        print("Tokens hold", vault.call().getBalance())
+```
 
                                                                            
