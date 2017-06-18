@@ -50,4 +50,11 @@ contract Issuer is Ownable, SafeMath {
     issuedCount = safeAdd(amount, issuedCount);
   }
 
+  /**
+   * How many tokens we have left in our approval pool.
+   */
+  function getApprovedTokenCount() public constant returns(uint tokens) {
+    return token.allowance(masterTokenBalanceHolder, address(this));
+  }
+
 }
