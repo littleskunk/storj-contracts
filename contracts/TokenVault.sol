@@ -145,8 +145,10 @@ contract TokenVault is Ownable {
     }
 
     // Do not lock the vault if the given tokens on this contract
-    //
-    if(token.balanceOf(address(this)) != tokensAllocatedTotal) {
+    // Note that we do not check != so that we can top up little bit extra
+    // due to decimal rounding and having issues with it.
+    // This extras will be lost forever when the vault is locked.
+    if(token.balanceOf(address(this)) < tokensAllocatedTotal) {
       throw;
     }
 

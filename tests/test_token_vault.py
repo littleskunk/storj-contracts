@@ -128,7 +128,7 @@ def test_lock_incorrectly(loaded_token_vault, team_multisig, token, customer, cu
     assert loaded_token_vault.call().getState() == TokenVaultState.Loading
 
     # Move wrong amount tokens
-    token.transact({"from": team_multisig}).transfer(loaded_token_vault.address, 4000)
+    token.transact({"from": team_multisig}).transfer(loaded_token_vault.address, 2500)
 
     assert loaded_token_vault.call().getState() == TokenVaultState.Loading
 
@@ -143,7 +143,7 @@ def test_lock_incorrectly(loaded_token_vault, team_multisig, token, customer, cu
     loaded_token_vault.transact({"from": team_multisig}).recoverFailedLock()
     after_balance = token.call().balanceOf(team_multisig)
 
-    assert after_balance - before_balance == 4000
+    assert after_balance - before_balance == 2500
 
 
 def test_load_after_lock(token_vault_single, team_multisig, token, customer, customer_2):
