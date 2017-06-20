@@ -139,11 +139,6 @@ contract TokenVault is Ownable {
       throw; // Already locked
     }
 
-    // Spreadsheet sum does not match to what we have loaded to the investor data
-    if(tokensAllocatedTotal != tokensToBeAllocated) {
-      throw;
-    }
-
     // Do not lock the vault if the given tokens on this contract
     // Note that we do not check != so that we can top up little bit extra
     // due to decimal rounding and having issues with it.
