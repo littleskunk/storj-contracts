@@ -155,39 +155,7 @@ Deploy an issuer contract using the following command. this is later referred as
    
 ### Approve tokens to the Issuer contract
 
-Call `StandardToken.approve(issuer_contract_address, total_issuance_amount)` from the team multisig wallet to give the the issuer contract permission to transfer the tokens. When you do approve the token amount must account for decimal places. E.g. 100 tokens is 100*10**8 total_issuance_amount.
-
-    cd ..
-
-Install node and npm via nvm
-
-    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
-
-The script clones the nvm repository to ~/.nvm and adds the source line to your profile (~/.bash_profile, ~/.zshrc, ~/.profile, or ~/.bashrc).
-
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # This loads nvm
-
-Install and use node 6.9.1
-    
-    nvm install 6.9.1
-    nvm use 6.9.1
-
-Clone and install the approve script repo
-
-    git clone https://github.com/nginnever/erc20-msig-approver
-    cd erc20-msig-approver
-    npm i
-
-Unlock Parity with a multisig owner account
-
-Run the script
-
-    cd src
-    node approve.js [issuer contract address] [amount]
-
-You should now be able to confirm the approve transaction from the Gnosis wallet UI
-
+We can use the Gnosis multisig wallet by loading the STORJ Token abi and contract address. Call the approve function with the number of tokens allowed and the address of the account to issue tokens.
     
 (Example using ipython console for a normal account. First start with `ipython` and then paste in the text using `%paste` command):
 
